@@ -17,7 +17,7 @@ class Connection extends Component
      * @param [type] $value
      * @return Connection
      */
-    public function setClient($value)
+    public function setClient($value) : self
     {
         $this->_client = $value;
         return $this;
@@ -28,7 +28,7 @@ class Connection extends Component
      *
      * @return Kreait\Firebase\Messaging
      */
-    public function getClient()
+    public function getClient() : \Kreait\Firebase\Messaging
     {
         if ($this->_client === null) {
             $path = Yii::$app->params['firebase']['config-path'];
@@ -50,7 +50,7 @@ class Connection extends Component
      * @param mixed $tokens
      * @return boolean
      */
-    public function subscribeToTopic(string $topic, mixed $tokens) : bool
+    public function subscribeToTopic(string $topic, mixed $tokens) 
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -70,7 +70,7 @@ class Connection extends Component
      * @param mixed $tokens
      * @return boolean
      */
-    public function unsubscribeFromTopic(string $topic, mixed $tokens) : bool
+    public function unsubscribeFromTopic(string $topic, mixed $tokens) 
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -92,7 +92,7 @@ class Connection extends Component
      * @param string $image
      * @return boolean
      */
-    public function sendToTopic(string $topic, string $title, string $body, string $image = null) : bool
+    public function sendToTopic(string $topic, string $title, string $body, string $image = null) 
     {
         $message = CloudMessage::withTarget('topic', $topic)
             ->withNotification(Notification::create($title, $body, $image));
@@ -107,7 +107,7 @@ class Connection extends Component
      * @param array $notification
      * @return boolean
      */
-    public function sendToTokens(mixed $tokens, string $title, string $body, string $image = null) : bool
+    public function sendToTokens(mixed $tokens, string $title, string $body, string $image = null) 
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -133,7 +133,7 @@ class Connection extends Component
      * @param string $image
      * @return boolean
      */
-    public function sendToAllDevice(string $title, string $body, string $image = null) : bool
+    public function sendToAllDevice(string $title, string $body, string $image = null) 
     {
         $message = CloudMessage::withTarget('topic', 'all')
             ->withNotification(Notification::create($title, $body, $image));
