@@ -151,4 +151,57 @@ class Connection extends Component
         return $this->getClient()->send($message);
     }
 
+    /**
+     * Get device info by token.
+     *
+     * @param array|string $deviceTokens
+     * @return array
+     */
+    public function getDeviceInfo($deviceTokens): array
+    {
+        if (is_string($deviceTokens)) {
+            $deviceTokens = [$deviceTokens];
+        }
+
+        $result = [];
+
+        foreach ($deviceTokens as $token) {
+            $instance = $this->getClient()->getAppInstance($token);
+            $result[$token] = $instance->rawData();
+        }
+        return $result;
+    }
+
+    /**
+     * Device register instance.
+     *
+     * @var ActiveRecord|null
+     */
+    protected $deviceRegisterClass;
+
+    /**
+     * Device register class setter method.
+     *
+     * @param string $className
+     * @return self
+     */
+    public function setDeviceRegisterClass($className): self
+    {
+        $this->deviceRegisterClass = new $className();
+        return $this;
+    }
+
+    /**
+     * Device register class getter method.
+     *
+     * @return void
+     */
+    public function getDeviceRegisterClass()
+    {
+        if ($this->deviceRegisterClass === null) {
+            $this->deviceRegisterClass = new \fcm\manager\models\FcmDeviceRegister();
+        }
+        return $this->deviceRegisterClass;
+    }
+
 }

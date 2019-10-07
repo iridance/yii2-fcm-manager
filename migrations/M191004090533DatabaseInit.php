@@ -37,6 +37,18 @@ class M191004090533DatabaseInit extends Migration
         ]);
         $this->addCommentOnTable('{{%fcm_notification_log}}', 'FCM Notification log');
         // ==================================================================================
+
+        // Create user device register table ==========================================================
+        $this->createTable('{{%fcm_device_register}}', [
+            'id'              => $this->bigPrimaryKey(),
+            'user_id'         => $this->bigInteger()->notNull()->comment('Relation to user table'),
+            'token'           => $this->string()->notNull()->comment('device token'),
+            'platform'        => $this->string()->comment('token platform'),
+            'create_datetime' => $this->timestamp()->notNull()->comment('Created datetime'),
+            'last_use_time'   => $this->timestamp()->notNull()->comment('Last use datetime'),
+        ]);
+        $this->addCommentOnTable('{{%fcm_device_register}}', 'FCM device register');
+        // =============================================================================================
     }
 
     /**
@@ -46,5 +58,6 @@ class M191004090533DatabaseInit extends Migration
     {
         $this->dropTable('{{%fcm_notification}}');
         $this->dropTable('{{%fcm_notification_log}}');
+        $this->dropTable('{{%fcm_device_register}}');
     }
 }
