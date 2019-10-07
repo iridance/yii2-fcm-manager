@@ -50,7 +50,7 @@ return [
 
 ## Basic Usage
 
-### Register token to database
+### Register device to database
 ```php
 $result = Yii::$app->fcm->deviceRegisterClass::registerDevice(
     '<registed_device_token>', // or ['<registed_device_token1>', '<registed_device_token2>']
@@ -80,7 +80,7 @@ $result = Yii::$app->fcm->sendToTopic(
     '<topic-name>',
     '<message title>',
     '<message content>',
-    '<message image url' // optional
+    '<message image url>' // optional
 );
 ```
 
@@ -90,6 +90,15 @@ $result = Yii::$app->fcm->sendToTokens(
     '<registed_device_token>' // or ['<registed_device_token1>', '<registed_device_token2>']
     '<message title>',
     '<message content>',
-    '<message image url' // optional
+    '<message image url>' // optional
 );
 ```
+
+## TODO
+
+### Notification GUI Manager
+
+### Schedule Message
+
+## Requirements
+
