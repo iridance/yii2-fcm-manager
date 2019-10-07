@@ -2,6 +2,7 @@
 
 namespace fcm\manager\components;
 
+use Yii;
 use yii\base\Component;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
