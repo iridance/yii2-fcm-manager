@@ -18,7 +18,7 @@ class Connection extends Component
      * @param [type] $value
      * @return Connection
      */
-    public function setClient($value) : self
+    public function setClient($value): self
     {
         $this->_client = $value;
         return $this;
@@ -29,7 +29,7 @@ class Connection extends Component
      *
      * @return Kreait\Firebase\Messaging
      */
-    public function getClient() : \Kreait\Firebase\Messaging
+    public function getClient(): \Kreait\Firebase\Messaging
     {
         if ($this->_client === null) {
             $path = Yii::$app->params['firebase']['config-path'];
@@ -48,10 +48,10 @@ class Connection extends Component
      * Subscribe to topic
      *
      * @param string $topic
-     * @param mixed $tokens
+     * @param string|array $tokens
      * @return boolean
      */
-    public function subscribeToTopic(string $topic, mixed $tokens) 
+    public function subscribeToTopic(string $topic, $tokens)
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -68,10 +68,10 @@ class Connection extends Component
      * Unsubscribe from topic
      *
      * @param string $topic
-     * @param mixed $tokens
+     * @param string|array $tokens
      * @return boolean
      */
-    public function unsubscribeFromTopic(string $topic, mixed $tokens) 
+    public function unsubscribeFromTopic(string $topic, $tokens)
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -93,7 +93,7 @@ class Connection extends Component
      * @param string $image
      * @return boolean
      */
-    public function sendToTopic(string $topic, string $title, string $body, string $image = null) 
+    public function sendToTopic(string $topic, string $title, string $body, string $image = null): array
     {
         $message = CloudMessage::withTarget('topic', $topic)
             ->withNotification(Notification::create($title, $body, $image));
@@ -104,11 +104,11 @@ class Connection extends Component
     /**
      * Send message to tokens
      *
-     * @param mixed $tokens
+     * @param string|array $tokens
      * @param array $notification
      * @return boolean
      */
-    public function sendToTokens(mixed $tokens, string $title, string $body, string $image = null) 
+    public function sendToTokens($tokens, string $title, string $body, string $image = null): array
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -121,7 +121,16 @@ class Connection extends Component
         $message = CloudMessage::new()
             ->withNotification(Notification::create($title, $body, $image));
 
-        return $this->getClient()->sendMulticast($message, $tokens);
+        $sendReport = $this->getClient()->sendMulticast($message, $tokens);
+
+        $items = $sendReport->getItems();
+
+        $result = [];
+        foreach ($items as $item) {
+            $result[] = $item->result();
+        }
+
+        return $result;
     }
 
     /**
