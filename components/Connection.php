@@ -175,7 +175,7 @@ class Connection extends Component
     /**
      * Device register instance.
      *
-     * @var ActiveRecord|null
+     * @var \fcm\manager\models\DeviceRegisterInterface|null
      */
     protected $deviceRegisterClass;
 
@@ -185,9 +185,13 @@ class Connection extends Component
      * @param string $className
      * @return self
      */
-    public function setDeviceRegisterClass($className): self
+    public function setDeviceRegisterClass(string $className): self
     {
-        $this->deviceRegisterClass = new $className();
+        $instance = new $className();
+        if ($instance instanceof \fcm\manager\models\DeviceRegisterInterface === false) {
+            throw new \yii\base\InvalidConfigException('deviceRegisterClass must be implemented by \fcm\manager\models\DeviceRegisterInterface.');
+        }
+        $this->deviceRegisterClass = $instance;
         return $this;
     }
 
@@ -196,7 +200,7 @@ class Connection extends Component
      *
      * @return void
      */
-    public function getDeviceRegisterClass()
+    public function getDeviceRegisterClass(): \fcm\manager\models\DeviceRegisterInterface
     {
         if ($this->deviceRegisterClass === null) {
             $this->deviceRegisterClass = new \fcm\manager\models\FcmDeviceRegister();
