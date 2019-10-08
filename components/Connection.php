@@ -2,7 +2,6 @@
 
 namespace fcm\manager\components;
 
-use Yii;
 use yii\base\Component;
 use Kreait\Firebase\Factory;
 use Kreait\Firebase\Messaging\CloudMessage;
@@ -10,17 +9,31 @@ use Kreait\Firebase\Messaging\Notification;
 
 class Connection extends Component
 {
-    protected $_client;
+    protected $configPath;
+
+    /**
+     * Set fcm config file path.
+     *
+     * @param string $value
+     * @return self
+     */
+    public function setConfigPath(string $value): self
+    {
+        $this->configPath = $value;
+        return $this;
+    }
+
+    protected $client;
 
     /**
      * Set fcm client
      *
      * @param [type] $value
-     * @return Connection
+     * @return self
      */
     public function setClient($value): self
     {
-        $this->_client = $value;
+        $this->client = $value;
         return $this;
     }
 
@@ -31,17 +44,19 @@ class Connection extends Component
      */
     public function getClient(): \Kreait\Firebase\Messaging
     {
-        if ($this->_client === null) {
-            $path = Yii::$app->params['firebase']['config-path'];
-
-            $firebase = (new Factory)
-                ->withServiceAccount($path)
-                ->create();
-    
-            $this->_client = $firebase->getMessaging();
+        if ($this->configPath === null) {
+            throw new \yii\base\InvalidConfigException("Property 'configPath' cannot be null.");
         }
 
-        return $this->_client;
+        if ($this->client === null) {
+            $firebase = (new Factory)
+                ->withServiceAccount($this->configPath)
+                ->create();
+    
+            $this->client = $firebase->getMessaging();
+        }
+
+        return $this->client;
     }
     
     /**
@@ -49,9 +64,9 @@ class Connection extends Component
      *
      * @param string $topic
      * @param string|array $tokens
-     * @return boolean
+     * @return array
      */
-    public function subscribeToTopic(string $topic, $tokens)
+    public function subscribeToTopic(string $topic, $tokens): array
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -69,9 +84,9 @@ class Connection extends Component
      *
      * @param string $topic
      * @param string|array $tokens
-     * @return boolean
+     * @return array
      */
-    public function unsubscribeFromTopic(string $topic, $tokens)
+    public function unsubscribeFromTopic(string $topic, $tokens): array
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
@@ -91,7 +106,7 @@ class Connection extends Component
      * @param string $title
      * @param string $body
      * @param string $image
-     * @return boolean
+     * @return array
      */
     public function sendToTopic(string $topic, string $title, string $body, string $image = null): array
     {
@@ -106,7 +121,7 @@ class Connection extends Component
      *
      * @param string|array $tokens
      * @param array $notification
-     * @return boolean
+     * @return array
      */
     public function sendToTokens($tokens, string $title, string $body, string $image = null): array
     {
@@ -141,9 +156,9 @@ class Connection extends Component
      * @param string $title
      * @param string $body
      * @param string $image
-     * @return boolean
+     * @return array
      */
-    public function sendToAllDevice(string $title, string $body, string $image = null) 
+    public function sendToAllDevice(string $title, string $body, string $image = null): array
     {
         $message = CloudMessage::withTarget('topic', 'all')
             ->withNotification(Notification::create($title, $body, $image));
