@@ -23,6 +23,8 @@ return [
     'components' => [
         'fcm' => [
             'class' => 'fcm\manager\components\Connection',
+            // you can download config file on firebase console 'https://console.firebase.google.com/u/1/project/<your_project>/settings/serviceaccounts/adminsdk'
+            'configPath' => __DIR__ . '/<your_project>-firebase-adminsdk.json',
         ],
         ...
     ],
