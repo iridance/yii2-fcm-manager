@@ -117,13 +117,13 @@ class Connection extends Component
     }
 
     /**
-     * Send message to tokens
+     * Send message to device
      *
      * @param string|array $tokens
      * @param array $notification
      * @return array
      */
-    public function sendToTokens($tokens, string $title, string $body, string $image = null): array
+    public function sendToDevice($tokens, string $title, string $body, string $image = null): array
     {
         if (is_string($tokens)) {
             $tokens = [$tokens];
