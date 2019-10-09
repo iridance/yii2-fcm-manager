@@ -7,6 +7,27 @@
 ```
 composer require irice/yii2-fcm-manager
 ```
+## Database Migration
+### cofnig/console.php
+```php
+return [
+    'controllerMap' => [
+        'migrate' => [
+            'class' => 'yii\console\controllers\MigrateController',
+            'migrationPath' => null,
+            'migrationNamespaces' => [
+                'fcm\manager\migrations',
+                ...
+            ],
+        ],
+    ],
+    ...
+];
+```
+And run migrate command
+```
+php yii migrate
+```
 
 ## Configuration
 ### config/web.php
@@ -32,24 +53,6 @@ return [
 ];
 
 ```
-
-### cofnig/console.php
-```php
-return [
-    'controllerMap' => [
-        'migrate' => [
-            'class' => 'yii\console\controllers\MigrateController',
-            'migrationPath' => null,
-            'migrationNamespaces' => [
-                'fcm\manager\migrations',
-                ...
-            ],
-        ],
-    ],
-    ...
-];
-```
-
 ## Basic Usage
 
 ### Register device to database
@@ -96,11 +99,50 @@ $result = Yii::$app->fcm->sendToTokens(
 );
 ```
 
+## Schedule Send Message
+The feature implement by Yii2-queue extension.
+### config/console.php
+```php
+'components' => [
+    'queue' => [
+        'class' => 'yii\queue\db\Queue',
+        'deleteReleased' => false,
+        'as log' => 'yii\queue\LogBehavior',
+    ],
+    'mutex' => [
+        'class' => 'yii\mutex\PgsqlMutex',
+    ],
+    'fcm' => [
+        'class' => 'fcm\manager\components\Connection',
+        'configPath' => __DIR__ . '/<your_project>-firebase-adminsdk.json',
+    ],
+    ...
+]
+```
+
+### Schedule a message to Topic
+```php
+$job = new \fcm\manager\jobs\SendJob([
+    'notification' => [
+        'title' => '<message-title>',
+        'body' => '<message-body>',
+        'target' => [
+            'type' => \fcm\manager\jobs\SendJob::TYPE_TOPIC,
+            'value' => '<topic-name>',
+        ],
+    ],
+]);
+
+$delayTime = strtotime('2019-12-31 00:00:00') - time(); //Send message on specified time.
+//$delayTime = strtotime('next Saturday') - time(); //Send message on next weekend.
+//$delayTime = 60 * 60 * 24; //Send message after 24 hours.
+
+$queueId = Yii::$app->queue->delay($delayTime)->push($job);
+```
+
 ## TODO
 
 ### Notification GUI Manager
 
-### Schedule Message
-
 ## Requirements
-
+Yii2-queue
