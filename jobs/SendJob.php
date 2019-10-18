@@ -25,14 +25,14 @@ class SendJob extends BaseObject implements \yii\queue\JobInterface
     /**
      * Notification object
      *
-     * @var \fcm\manager\models\NotificationsInterface|ActiveRecord|array
+     * @var \fcm\manager\models\NotificationsInterface|mixed
      */
     protected $notification;
 
     /**
      * Notification object setter
      *
-     * @param \fcm\manager\models\NotificationsInterface|ActiveRecord|array $value
+     * @param \fcm\manager\models\NotificationsInterface|mixed $value
      * @return self
      */
     public function setNotification($value): self
@@ -46,7 +46,7 @@ class SendJob extends BaseObject implements \yii\queue\JobInterface
     /**
      * Notification format validation.
      *
-     * @param \fcm\manager\models\NotificationsInterface|ActiveRecord|array $value
+     * @param \fcm\manager\models\NotificationsInterface|mixed $value
      * @return void
      */
     protected function validateNotification($value)
@@ -78,14 +78,28 @@ class SendJob extends BaseObject implements \yii\queue\JobInterface
         $target = $this->notification['target'];
         $action = $this->targetMethods[$target['type']];
         $result = $fcm->$action($target['value'], $this->notification['title'], $this->notification['body']);
-
-        if ($this->notification instanceof \fcm\manager\models\NotificationsInterface) {
+        
+        try {
             $status = isset($result['name']) ? 'successStatus' : 'failStatus';
-            $this->notification->updateStatus($this->notification->${$status});
+            static::saveStatus($this->notification, $status);
+        } catch (\TypeError $e) {
+            Yii::info($e->getMessage(), 'fcm:queue');
         }
 
         //TODO: save api result to log.
 
         return $result;
+    }
+
+    /**
+     * save status to owner notification model.
+     *
+     * @param \fcm\manager\models\NotificationInterface $instance
+     * @param mixed $status
+     * @return void
+     */
+    public static function saveStatus(\fcm\manager\models\NotificationInterface $instance, $status)
+    {
+        return $instance->updateStatus($instance->$status);
     }
 }
