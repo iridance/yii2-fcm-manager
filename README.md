@@ -101,11 +101,12 @@ $result = Yii::$app->fcm->sendToTokens(
 
 ## Schedule Send Message
 The feature implement by Yii2-queue extension.
-### config/console.php
+### config/console.php (config/web.php)
 ```php
 'components' => [
     'queue' => [
         'class' => 'yii\queue\db\Queue',
+        'serializer' => 'fcm\manager\components\PhpSerializer',
         'deleteReleased' => false,
         'as log' => 'yii\queue\LogBehavior',
     ],
@@ -138,6 +139,29 @@ $delayTime = strtotime('2019-12-31 00:00:00') - time(); //Send message on specif
 //$delayTime = 60 * 60 * 24; //Send message after 24 hours.
 
 $queueId = Yii::$app->queue->delay($delayTime)->push($job);
+```
+#### Auto update fcm progress after send
+Implement NotificationInterface on custom class
+```php
+class Notification extends \yii\db\ActiveRecord implements \fcm\manager\models\NotificationInterface
+{
+    ... 
+    public function getSuccessStatus()
+    {
+        return static::STATUS['SENDED'];
+    }
+
+    public function getFailStatus()
+    {
+        return static::STATUS['FAILED'];
+    }
+
+    public function updateStatus($value)
+    {
+        $this->status = $value;
+        return $this->save();
+    }
+}
 ```
 
 ## TODO
