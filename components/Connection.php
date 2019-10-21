@@ -10,7 +10,6 @@ use Kreait\Firebase\Messaging\Notification;
 class Connection extends Component
 {
     protected $configPath;
-
     /**
      * Set fcm config file path.
      *
@@ -24,7 +23,6 @@ class Connection extends Component
     }
 
     protected $client;
-
     /**
      * Set fcm client
      *
@@ -57,6 +55,17 @@ class Connection extends Component
         }
 
         return $this->client;
+    }
+
+    /**
+     * Subscribe device in global topic.
+     *
+     * @param string|array $tokens
+     * @return array
+     */
+    public function subscribe($tokens): array
+    {
+        return $this->subscribeToTopic('all', $tokens);
     }
     
     /**
@@ -97,6 +106,25 @@ class Connection extends Component
         }
 
         return $this->getClient()->unsubscribeFromTopic($topic, $tokens);
+    }
+
+    /**
+     * Unsubscribe all topic by device
+     *
+     * @param string $token
+     * @return array
+     */
+    public function flushTopicByDevice($token): array
+    {
+        $results = [];
+        $instance = $this->getClient()->getAppInstance($token);
+        $subscriptions = $instance->topicSubscriptions();
+
+        foreach ($subscriptions as $subscription) {
+            $results[] = $this->unsubscribeFromTopic($subscription->topic(), $token);
+        }
+
+        return $results;
     }
 
     /**

@@ -78,24 +78,52 @@ class FcmDeviceRegister extends \yii\db\ActiveRecord implements DeviceRegisterIn
      */
     public static function registerDevice($deviceTokens, int $user_id): bool
     {
-        $result = Yii::$app->fcm->getDeviceInfo($deviceTokens);
+        $results = [];
+        $instance = Yii::$app->fcm->getDeviceInfo($deviceTokens);
 
-        foreach ($result as $token => $info) {
-            $query = static::find()->andWhere(['token' => $token, 'user_id' => $user_id]);
-            if ($query->exists()) {
-                $model = $query->one();
-
-                $model->last_use_time = date('Y-m-d H:i:s');
-            } else {
+        foreach ($instance as $token => $info) {
+            $query = static::find()->andWhere(['token' => $token]);
+            if (!$query->exists()) {
+                $subscribeGlobal = Yii::$app->fcm->subscribe($token);
                 $model = new static([
                     'user_id'  => $user_id,
                     'token'    => $token,
                     'platform' => $info['platform'], //. ':' . $info['application'] //optionals info
                 ]);
+                $results[] = $model->save();
+                continue;
             }
+
+            $model = $query->one();
+            if ($user_id != $model->user_id) { //device change user.
+                $results[] = Yii::$app->fcm->flushTopicByDevice($token);
+                $model->user_id = $user_id;
+            }
+            $model->last_use_time = date('Y-m-d H:i:s');
             $model->save();
         }
 
-        return false;
+        return count($results) > 0 ? true : false;
+    }
+
+    /**
+     * Implements interface, remove device info from database.
+     *
+     * @param array|string $deviceTokens
+     * @return boolean
+     */
+    public static function unRegisterDevice($deviceTokens): bool
+    {
+        if (is_string($deviceTokens)) {
+            $deviceTokens = [$deviceTokens];
+        }
+
+        $results = [];
+
+        foreach ($deviceTokens as $device) {
+            $results[] = Yii::$app->fcm->flushTopicByDevice($device);
+        }
+
+        return count($results) > 0 ? true : false;
     }
 }
