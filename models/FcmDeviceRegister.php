@@ -97,6 +97,7 @@ class FcmDeviceRegister extends \yii\db\ActiveRecord implements DeviceRegisterIn
             $model = $query->one();
             if ($user_id != $model->user_id) { //device change user.
                 $results[] = Yii::$app->fcm->flushTopicByDevice($token);
+                $subscribeGlobal = Yii::$app->fcm->subscribe($token);
                 $model->user_id = $user_id;
             }
             $model->last_use_time = date('Y-m-d H:i:s');
@@ -122,6 +123,7 @@ class FcmDeviceRegister extends \yii\db\ActiveRecord implements DeviceRegisterIn
 
         foreach ($deviceTokens as $device) {
             $results[] = Yii::$app->fcm->flushTopicByDevice($device);
+            $deleteResult = static::deleteAll(['token' => $device]);
         }
 
         return count($results) > 0 ? true : false;
